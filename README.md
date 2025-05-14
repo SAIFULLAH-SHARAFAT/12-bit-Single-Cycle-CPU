@@ -15,7 +15,13 @@ This was built as a project, but I have done all the things, and it was pretty f
 - Develop an assembler to translate assembly language programs into machine code (binary) and generate an output file with machine instructions.
 
 ---
+# Architecture Design
 
+**Logisim Simulator**  
+The Logisim circuit design file **`ISA_12_Bit.circ`** is included in the root folder.  
+Use _Logisim 3.8.0_ to open, simulate, and modify the CPU. (Fully my design)
+
+---
 ## Design Overview
 
 Our CPU instruction word is **12 bits** wide, divided as follows:
@@ -23,8 +29,8 @@ Our CPU instruction word is **12 bits** wide, divided as follows:
 | Bits   | Field            | Size (bits) |
 |--------|------------------|-------------|
 | 11 - 8 | Opcode           | 4           |
-| 7 - 4  | Destination Reg  | 4           |
-| 3 - 0  | Source Operand   | 4           |
+| 7 - 4  | Source/Base Reg  | 4           |
+| 3 - 0  | Destination Reg  | 4           |
 
 ---
 
@@ -49,24 +55,26 @@ Our CPU instruction word is **12 bits** wide, divided as follows:
   - Conditional Branch
   - Unconditional Jump
 
-| Category          | Instruction | Opcode (Binary) | Example Syntax     | Meaning/Operation                                  |
-|-------------------|-------------|-----------------|--------------------|--------------------------------------------------|
-| **Arithmetic**    | add         | 0000            | `add $s0, $s1`     | `$s0 = $s0 + $s1`                                |
-|                   | addi        | 0001            | `addi $s0, 20`     | `$s0 = $s0 + 20`                                 |
-|                   | sub         | 0010            | `sub $s0, $s1`     | `$s0 = $s0 - $s1`                                |
-|                   | subi        | 0011            | `subi $s0, 5`      | `$s0 = $s0 - 5`                                  |
-| **Logical**       | and         | 0100            | `and $s0, $s1`     | `$s0 = $s0 & $s1`                                |
-|                   | sll         | 0101            | `sll $s0, 2`       | Shift left logical `$s0` by 2                     |
-|                   | or          | 0110            | `or $s0, $s1`      | `$s0 = $s0 | $s1`                                |
-|                   | xor         | 0111            | `xor $s0, $s1`     | `$s0 = $s0 ^ $s1`                                |
-|                   | nand        | 1000            | `nand $s0, $s1`    | `$s0 = !($s0 & $s1)`                             |
-| **Data Transfer** | lw          | 1001            | `lw $s0, 2`        | Load word: `$s0 = mem[$t0 + offset]`             |
-|                   | sw          | 1010            | `sw $s0, 2`        | Store word: `mem[$t0 + offset] = $s0`            |
-| **Conditional**   | beq         | 1011            | `beq $s0, 4`       | If `$s0 == $t0` then jump to address 4            |
-|                   | bne         | 1100            | `bne $s0, 4`       | If `$s0 != $t0` then jump to address 4            |
-|                   | slt         | 1101            | `slt $s0, $s1`     | `$t0 = 1` if `$s0 < $s1`, else `$t0 = 0`          |
-|                   | slti        | 1110            | `slti $s0, 2`      | `$t0 = 1` if `$s0 < 2`, else `$t0 = 0`             |
-| **Unconditional** | j           | 1111            | `j 20`             | Jump to address 20                                 |
+## Instruction Set Architecture (16 Instructions)
+
+| Opcode (4 bits) | Instruction | Syntax                     | Operation                              | Encoding (12 bits)                  |
+|-----------------|-------------|----------------------------|--------------------------------------|-----------------------------------|
+| 0000            | add         | `add $d, $s`               | `$d = $d + $s`                       | `0000 | d(4) | s(4) | 0000`        |
+| 0001            | addi        | `addi $d, imm`             | `$d = $d + imm`                      | `0001 | d(4) | imm(4) | ----`       |
+| 0010            | sub         | `sub $d, $s`               | `$d = $d - $s`                       | `0010 | d(4) | s(4) | 0000`        |
+| 0011            | subi        | `subi $d, imm`             | `$d = $d - imm`                      | `0011 | d(4) | imm(4) | ----`       |
+| 0100            | and         | `and $d, $s`               | `$d = $d & $s`                       | `0100 | d(4) | s(4) | 0000`        |
+| 0101            | sll         | `sll $d, imm`              | Shift `$d` left by `imm` bits        | `0101 | d(4) | imm(4) | ----`       |
+| 0110            | or          | `or $d, $s`                | `$d = $d | $s`                       | `0110 | d(4) | s(4) | 0000`        |
+| 0111            | xor         | `xor $d, $s`               | `$d = $d ^ $s`                       | `0111 | d(4) | s(4) | 0000`        |
+| 1000            | nand        | `nand $d, $s`              | `$d = !($d & $s)`                    | `1000 | d(4) | s(4) | 0000`        |
+| 1001            | lw          | `lw $d, imm`               | `$d = mem[imm]`                      | `1001 | d(4) | imm(8)`             |
+| 1010            | sw          | `sw $s, imm`               | `mem[imm] = $s`                      | `1010 | s(4) | imm(8)`             |
+| 1011            | beq         | `beq $s1, $s2, offset`     | If `$s1 == $s2`, branch PC + offset  | `1011 | s1(4) | s2(4) | offset(4)`|
+| 1100            | bne         | `bne $s1, $s2, offset`     | If `$s1 != $s2`, branch PC + offset  | `1100 | s1(4) | s2(4) | offset(4)`|
+| 1101            | slt         | `slt $d, $s`               | `$d = 1` if `$d < $s`, else 0       | `1101 | d(4) | s(4) | 0000`        |
+| 1110            | slti        | `slti $d, imm`             | `$d = 1` if `$d < imm`, else 0      | `1110 | d(4) | imm(4) | ----`       |
+| 1111            | j           | `j target`                 | Jump to absolute address `target`    | `1111 | target(8) | ----`          |
 
 ---
 
@@ -82,11 +90,11 @@ Our CPU instruction word is **12 bits** wide, divided as follows:
 
 ## Register File
 
-| Register Number | Register Name | Binary Code | Description             |
-|-----------------|---------------|-------------|-------------------------|
-| 0               | `$zero`       | 0000        | Constant zero           |
-| 1 - 7           | `$s0` - `$s6` | 0001-0111   | Saved registers         |
-| 8 - 15          | `$t0` - `$t7` | 1000-1111   | Temporary registers     |
+| Register | Name      | Binary | Description          |
+|----------|-----------|--------|----------------------|
+| 0        | `$zero`   | 0000   | Hardwired zero       |
+| 1–7      | `$s0–$s6` | 0001–0111 | Saved registers    |
+| 8–15     | `$t0–$t7` | 1000–1111 | Temporary registers |
 
 ---
 
@@ -101,48 +109,36 @@ Our CPU instruction word is **12 bits** wide, divided as follows:
   Operation: `$s4 = $s4 + 11`
 
 - **Base Addressing:**  
-  Example: `lw $s0, 2($s1)`  
-  Operation: `$s0 = mem[$s1 + offset]`
-
+  Example: `lw $s0, $t1, 12`    
+  Operation: `$s0 = mem[$t1 + 12]
 ---
 
-## Architecture Design
 
-  **Logisim Simulator**
-    The Logisim circuit design file named **ISA_12_Bit.circ** is included in the _repository root_.
-    If you want to open it, use the open-source ** _Logisim 3.8.0 to view_**, simulate or modify the CPU design.
+## Program of simple Arithmetic  
+add $s0, $s1       # $s0 = $s0 + $s1  
 
-## Sample Programs
+## Logical Operation  
+and $s0, $s1       # $s0 = $s0 & $s1  
 
-```asm
-# Program of simple Arithmetic
-add $s0, $s1       # $s0 = $s0 + $s1
+## Condition Check  
+addi $t0, 10       # $t0 = $t0 + 10 (uses immediate addressing)  
+beq $s2, $t0, L    # If $s2 == $t0, branch to L (offset must be 4-bit)  
+addi $s2, -4       # Else, $s2 = $s2 - 4  
+j Exit             # Jump to Exit (absolute address)  
 
-# Logical Operation
-and $s0, $s1       # $s0 = $s0 & $s1
+L: addi $s2, 4     # $s2 = $s2 + 4  
+Exit:  
 
-# Condition Check
-addi $t0, 10       # $t0 = 10
-beq $s2, L         # if ($s2 == $t0) jump to L
-addi $s2, -4       # else $s2 = $s2 - 4
-j Exit             # jump to Exit
+## Loop example with 4-bit branch offset limitation  
+sub $s2, $s2          # i = 0  
 
-L: addi $s2, 4     # $s2 = $s2 + 4
-Exit:
+L1: slti $t0, $s2, 5   # $t0 = 1 if i < 5  
+    beq $t0, $zero, Exit  # If $t0 == 0, branch to Exit (offset = -2)  
+    addi $s0, $s0, 4      # a += 4  
+    addi $s2, $s2, 1      # i++  
+    j L1                  # Jump to L1 (absolute address)  
 
-# Loop
-sub $s2, $s2       # initialize i = 0
-sub $t0, $t0       # clear temporary register
-sub $s0, $s0       # clear a
-
-L1: slti $t0, $s2, 5     # if i < 5 then $t0=1 else 0
-    beq $t0, $zero, Exit # if $t0 == 0, exit loop
-    addi $s0, 4          # a = a + 4
-    addi $s2, 1          # i++
-    j L1                 # jump to L1
-
-Exit:
-
+Exit:  
 
 
 
