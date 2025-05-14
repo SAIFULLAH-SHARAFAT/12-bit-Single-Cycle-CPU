@@ -138,4 +138,10 @@ L1: slti $t0, $s2, 5     # if i < 5 then $t0=1 else 0
 Exit:
 
 
+## Circuit Design
+
+The Logisim circuit design file is located in the `logisim/` folder as `ISA_12_Bit.circ`.
+If you want to pen it, use the open-source Logisim 3.8.0 to view, simulate or modify the CPU design.
+
+
 
