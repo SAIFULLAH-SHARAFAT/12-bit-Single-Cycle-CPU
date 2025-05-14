@@ -140,7 +140,7 @@ Exit:
 
 ## Circuit Design
 
-The Logisim circuit design file is located in the `logisim/` folder as `ISA_12_Bit.circ`.
+The Logisim circuit design file named `ISA_12_Bit.circ` is included in the repository root.
 If you want to pen it, use the open-source Logisim 3.8.0 to view, simulate or modify the CPU design.
 
 
