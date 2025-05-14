@@ -106,6 +106,12 @@ Our CPU instruction word is **12 bits** wide, divided as follows:
 
 ---
 
+## Architecture Design
+
+  **Logisim Simulator**
+    The Logisim circuit design file named **ISA_12_Bit.circ** is included in the _repository root_.
+    If you want to open it, use the open-source ** _Logisim 3.8.0 to view_**, simulate or modify the CPU design.
+
 ## Sample Programs
 
 ```asm
@@ -136,16 +142,6 @@ L1: slti $t0, $s2, 5     # if i < 5 then $t0=1 else 0
     j L1                 # jump to L1
 
 Exit:
-
-
----
-
-### Notes:
-- The entire assembly code is inside a single fenced code block marked as `asm` for syntax highlighting.
-- The text after the code block resumes normal Markdown formatting with headings and paragraphs.
-- This will render nicely on GitHub and keep your README clean and readable.
-
-If you want me to generate the full README file including this and other sections, just say!
 
 
 
